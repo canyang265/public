@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  practice:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    
+    container_name: practice
+    
+    environment:
+      - PATH=/home/practice/.local/bin:/usr/local/bin:/usr/bin:/bin
+      - PYTHONUNBUFFERED=1
+      - ANSIBLE_HOST_KEY_CHECKING=False
+      
+    networks:
+      - practice-network
+    
+    working_dir: /practice
+    
+    command: /bin/bash
+    
+    stdin_open: true
+    tty: true
+
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+    
+    restart: unless-stopped
+  
+networks:
+  practice-network:
+    driver: bridge
