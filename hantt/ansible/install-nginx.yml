@@ -3,11 +3,8 @@
   become: yes
   
   tasks:
-    - name: Install NGINX and Python3
-      yum:
-        name:
-          - nginx
-        state: present
+    - name: Install NGINX
+      shell: amazon-linux-extras install nginx1 -y
 
     - name: Start and enable NGINX service
       systemd:
