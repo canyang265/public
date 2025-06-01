@@ -16,6 +16,15 @@ variable "key_pair_name" {
   default     = "practice-ec2-key-pair"
 }
 
+locals {
+  user_data = <<-EOF
+              #!/bin/bash
+              sudo amazon-linux-extras install python3.8 -y
+              sudo ln -sf /usr/bin/python3.8 /usr/bin/python3
+              sudo ln -sf /usr/bin/pip3.8 /usr/bin/pip3
+              EOF
+}
+
 data "aws_availability_zones" "available" {
   state = "available"
 }
@@ -102,15 +111,7 @@ resource "aws_security_group" "ec2" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
-
-  ingress {
-    description = "HTTPS"
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
+  
   egress {
     from_port   = 0
     to_port     = 0
@@ -189,13 +190,14 @@ resource "aws_iam_instance_profile" "ec2_profile" {
   }
 }
 
-resource "aws_instance" "main" {
+resource "aws_instance" "practice" {
   ami                    = data.aws_ami.amazon_linux.id
   instance_type          = var.instance_type
   key_name               = var.key_pair_name
   vpc_security_group_ids = [aws_security_group.ec2.id]
   subnet_id              = aws_subnet.public.id
   iam_instance_profile   = aws_iam_instance_profile.ec2_profile.name
+  user_data              = base64encode(local.user_data)
 
   root_block_device {
     volume_type = "gp2"
@@ -224,17 +226,17 @@ output "public_subnet_id" {
 
 output "ec2_instance_id" {
   description = "ID of the EC2 instance"
-  value       = aws_instance.main.id
+  value       = aws_instance.practice.id
 }
 
 output "ec2_public_ip" {
   description = "Public IP of the EC2 instance"
-  value       = aws_instance.main.public_ip
+  value       = aws_instance.practice.public_ip
 }
 
 output "ec2_private_ip" {
   description = "Private IP of the EC2 instance"
-  value       = aws_instance.main.private_ip
+  value       = aws_instance.practice.private_ip
 }
 
 output "security_group_id" {
@@ -244,5 +246,10 @@ output "security_group_id" {
 
 output "ssh_cmd" {
   description = "SSH command to connect to instance"
-  value       = "ssh -i ${var.key_pair_name}.pem ec2-user@${aws_instance.main.public_ip}"
+  value       = "ssh -i ${var.key_pair_name}.pem ec2-user@${aws_instance.practice.public_ip}"
+}
+
+output "user_data_check" {
+  description = "SSH command to connect to instance"
+  value       = "ssh -i ${var.key_pair_name}.pem ec2-user@${aws_instance.practice.public_ip} 'sudo python3 --version'"
 }
