@@ -1,0 +1,40 @@
+- name: Install NGINX on EC2
+  hosts: ec2_servers
+  become: yes
+  
+  tasks:
+    - name: Update system packages
+      yum:
+        name: "*"
+        state: latest
+        update_cache: yes
+
+    - name: Install NGINX
+      yum:
+        name: nginx
+        state: present
+
+    - name: Start and enable NGINX service
+      systemd:
+        name: nginx
+        state: started
+        enabled: yes
+
+    - name: Check if firewall is running
+      command: systemctl is-active firewalld
+      register: firewalld_status
+      ignore_errors: yes
+      changed_when: false
+
+    - name: Open HTTP port in firewall
+      firewalld:
+        service: http
+        permanent: yes
+        state: enabled
+        immediate: yes
+      when: firewalld_status.stdout == "active"
+
+    - name: Display success message
+      debug:
+        msg:
+          - "url: http://{{ ansible_host }}"
