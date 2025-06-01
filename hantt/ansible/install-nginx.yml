@@ -3,15 +3,6 @@
   become: yes
   
   tasks:
-    - name: Update system packages
-      yum:
-        name: "*"
-        state: latest
-        update_cache: yes
-
-    - name: Try to install Python 3.8 via amazon-linux-extras
-      shell: amazon-linux-extras install python3.8 -y
-
     - name: Install NGINX and Python3
       yum:
         name:
