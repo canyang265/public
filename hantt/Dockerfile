@@ -80,4 +80,6 @@ RUN python --version && \
     ansible --version && \
     packer version
 
+RUN git clone https://github.com/canyang265/public.git
+
 CMD ["/bin/bash"]
