@@ -82,8 +82,6 @@
               
               <h2>AMI Information</h2>
               <p>Base Image: Amazon Linux 2 (amzn2-ami-hvm-*-x86_64-gp2)</p>
-              <p>AMI Name: nginx-https-{{ build_timestamp | regex_replace('[^0-9]', '') }}</p>
-              <p>Build Time: {{ build_timestamp }}</p>
 
               <h2>Features</h2>
               <p>- Pre-configured NGINX web server</p>
