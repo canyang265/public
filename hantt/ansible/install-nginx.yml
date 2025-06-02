@@ -12,12 +12,6 @@
         state: started
         enabled: yes
 
-    - name: Check if firewall is running
-      command: systemctl is-active firewalld
-      register: firewalld_status
-      ignore_errors: yes
-      changed_when: false
-
     - name: Generate simple self-signed SSL certificate
       shell: |
         openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
