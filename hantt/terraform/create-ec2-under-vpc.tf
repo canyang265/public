@@ -58,7 +58,7 @@ resource "aws_internet_gateway" "practice" {
   vpc_id = aws_vpc.practice.id
 
   tags = {
-    Name = "main-igw"
+    Name = "practice-igw"
   }
 }
 
@@ -132,79 +132,12 @@ resource "aws_security_group" "ec2" {
   }
 }
 
-resource "aws_iam_role" "ec2_role" {
-  name = "ec2-practice-role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "ec2.amazonaws.com"
-        }
-      }
-    ]
-  })
-
-  tags = {
-    Name = "ec2-practice-role"
-  }
-}
-
-resource "aws_iam_role_policy" "ec2_policy" {
-  name = "ec2-practice-policy"
-  role = aws_iam_role.ec2_role.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "logs:CreateLogGroup",
-          "logs:CreateLogStream",
-          "logs:PutLogEvents",
-          "logs:DescribeLogStreams",
-          "logs:DescribeLogGroups"
-        ]
-        Resource = "arn:aws:logs:*:*:*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "cloudwatch:PutMetricData",
-          "cloudwatch:GetMetricStatistics",
-          "cloudwatch:ListMetrics"
-        ]
-        Resource = "*"
-      }
-    ]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "ssm_managed_instance_core" {
-  role       = aws_iam_role.ec2_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-}
-
-resource "aws_iam_instance_profile" "ec2_profile" {
-  name = "ec2-practice-profile"
-  role = aws_iam_role.ec2_role.name
-
-  tags = {
-    Name = "ec2-profile"
-  }
-}
-
 resource "aws_instance" "practice" {
   ami                    = data.aws_ami.amazon_linux.id
   instance_type          = var.instance_type
   key_name               = var.key_pair_name
   vpc_security_group_ids = [aws_security_group.ec2.id]
   subnet_id              = aws_subnet.public.id
-  iam_instance_profile   = aws_iam_instance_profile.ec2_profile.name
   user_data              = base64encode(local.user_data)
 
   root_block_device {
@@ -258,6 +191,6 @@ output "ssh_cmd" {
 }
 
 output "user_data_check" {
-  description = "SSH command to connect to instance"
+  description = "SSH command to check Python version"
   value       = "ssh -i ${var.key_pair_name}.pem ec2-user@${aws_instance.practice.public_ip} 'sudo python3 --version'"
 }
